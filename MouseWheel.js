@@ -12,10 +12,20 @@
  * @constructor
  */
 var MouseWheel = (function(window) {
-    var bindMouseWheel = function(el, fn) {
-            el.onwheel = el.onmousewheel = el.onDOMMouseScroll = el.onMozMousePixelScroll = fn;
-        },
-        handler = function (e) {
+    function Constructor (element, scrollElement, verticalPixels, horizontalPixels) {
+        this.element = element;
+        this.scrollElement = element.scrollElement = scrollElement || element;
+        this.verticalPixels = verticalPixels || 20;
+        this.horizontalPixels = horizontalPixels || 10;
+
+        //initial binding, which will await the first trigger of mousewheel, then rewrite itself.
+        this.bindMouseWheel(element, this.initialHandler);
+
+        element.mW = this;
+    }
+
+    Constructor.prototype = {
+        initialHandler: function (e) {
             e = e || window.event;
 
             var mousewheel,
@@ -28,7 +38,7 @@ var MouseWheel = (function(window) {
                 if (e.wheelDeltaX !== undefined) {
                     this.mWType = 1;
                     mousewheel = function(e) {
-                        e = e || win.event;
+                        e = e || window.event;
 
                         var deltaY = e.wheelDeltaY,
                             deltaX = e.wheelDeltaX,
@@ -48,7 +58,7 @@ var MouseWheel = (function(window) {
                     //IE
                     this.mWType = 2;
                     mousewheel = function(e) {
-                        e = e || win.event;
+                        e = e || window.event;
 
                         var delta = e.wheelDelta,
                             scrollElement = this.scrollElement;
@@ -102,21 +112,13 @@ var MouseWheel = (function(window) {
                 };
             }
 
-            bindMouseWheel(this, mousewheel);
+            Constructor.prototype.bindMouseWheel(this, mousewheel);
             return false;
-        };
-
-    function Constructor (element, scrollElement, verticalPixels, horizontalPixels) {
-        this.element = element;
-        this.scrollElement = element.scrollElement = scrollElement || element;
-        this.verticalPixels = verticalPixels || 20;
-        this.horizontalPixels = horizontalPixels || 10;
-
-        //initial binding, which will await the first trigger of mousewheel, then rewrite itself.
-        bindMouseWheel(element, handler);
-
-        element.mW = this;
-    }
+        },
+        bindMouseWheel: function(el, fn) {
+            el.onwheel = el.onmousewheel = el.onDOMMouseScroll = el.onMozMousePixelScroll = fn;
+        }
+    };
 
     return Constructor;
 })(window);
